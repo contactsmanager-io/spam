@@ -21,7 +21,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g prettier jq
+          # Install system jq (not the Node.js package)
+          sudo apt-get update
+          sudo apt-get install -y jq
+          # Verify jq installation
+          which jq
+          jq --version
 
       - name: Debug - List files
         run: |
