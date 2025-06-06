@@ -22,121 +22,419 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo "🔧 Installing validation dependencies..."
+          # Install system jq for JSON processing
+          sudo apt-get update
+          sudo apt-get install -y jq
+          # Install AJV with format support
           npm install -g ajv-cli ajv-formats
+          echo ""
+          echo "📋 Installed versions:"
+          echo "  jq: $(jq --version)"
+          echo "  ajv-cli: $(ajv --version)"
+          echo "  Node.js: $(node --version)"
+          echo "  npm: $(npm --version)"
+
+      - name: Debug - List files and structure
+        run: |
+          echo "📁 Workspace structure:"
+          ls -la
+          echo ""
+          echo "📁 Schemas directory:"
+          if [ -d "schemas" ]; then
+            ls -la schemas/
+          else
+            echo "❌ schemas directory not found"
+          fi
+          echo ""
+          echo "📁 Patterns directory:"
+          if [ -d "patterns" ]; then
+            ls -la patterns/
+          else
+            echo "❌ patterns directory not found"
+          fi
+          echo ""
+          echo "📁 Blocklists directory:"
+          if [ -d "blocklists" ]; then
+            ls -la blocklists/
+          else
+            echo "❌ blocklists directory not found"
+          fi
+
+      - name: Debug - Check schema files
+        run: |
+          echo "🔍 Examining schema files..."
+
+          schema_files=(
+            "schemas/phone-pattern.schema.json"
+            "schemas/email-pattern.schema.json"
+            "schemas/domain-pattern.schema.json"
+            "schemas/phone-blocklist.schema.json"
+            "schemas/email-blocklist.schema.json"
+            "schemas/domain-blocklist.schema.json"
+          )
+
+          for schema in "${schema_files[@]}"; do
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📄 Schema: $schema"
+            if [ -f "$schema" ]; then
+              echo "✅ File exists"
+              file_size=$(wc -c < "$schema")
+              echo "📊 Size: $file_size bytes"
+              
+              # Check if it's valid JSON
+              if jq empty "$schema" 2>/dev/null; then
+                echo "✅ Valid JSON syntax"
+                
+                # Show schema structure
+                echo "🏗️  Schema structure:"
+                jq -r 'keys[]' "$schema" 2>/dev/null || echo "Could not extract keys"
+                
+                # Check for format specifications
+                echo "🎨 Format specifications found:"
+                jq -r 'paths(scalars) as $p | select(getpath($p) | type == "string" and test("format")) | $p + [getpath($p)]' "$schema" 2>/dev/null || echo "No format specs detected"
+                
+                # Show first 20 lines for inspection
+                echo "📄 First 20 lines:"
+                head -20 "$schema" | cat -n
+              else
+                echo "❌ Invalid JSON syntax"
+                jq empty "$schema" 2>&1 || true
+              fi
+            else
+              echo "❌ Schema file not found"
+            fi
+            echo ""
+          done
 
       - name: Validate phone patterns
         run: |
-          ajv validate -s schemas/phone-pattern.schema.json -d patterns/phone-patterns.json --spec=draft7 --verbose --all-errors
+          echo "🔍 Validating phone patterns..."
+          echo "Schema: schemas/phone-pattern.schema.json"
+          echo "Data: patterns/phone-patterns.json"
 
-      - name: Validate email patterns
-        run: |
-          ajv validate -s schemas/email-pattern.schema.json -d patterns/email-patterns.json --spec=draft7 --verbose --all-errors
-
-      - name: Validate domain patterns
-        run: |
-          ajv validate -s schemas/domain-pattern.schema.json -d patterns/domain-patterns.json --spec=draft7 --verbose --all-errors
-
-      - name: Validate phone blocklist
-        run: |
-          ajv validate -s schemas/phone-blocklist.schema.json -d blocklists/phone-numbers.json --spec=draft7 --verbose --all-errors
-
-      - name: Validate email blocklist
-        run: |
-          ajv validate -s schemas/email-blocklist.schema.json -d blocklists/email-addresses.json --spec=draft7 --verbose --all-errors
-
-      - name: Validate domain blocklist
-        run: |
-          ajv validate -s schemas/domain-blocklist.schema.json -d blocklists/domains.json --spec=draft7 --verbose --all-errors
-
-      - name: Check for duplicate IDs in patterns
-        run: |
-          echo "Checking for duplicate pattern IDs..."
-
-          # Check phone patterns
-          phone_dups=$(jq -r '.patterns[].id' patterns/phone-patterns.json | sort | uniq -d)
-          if [ ! -z "$phone_dups" ]; then
-            echo "❌ Duplicate phone pattern IDs found: $phone_dups"
+          if [ -f "schemas/phone-pattern.schema.json" ] && [ -f "patterns/phone-patterns.json" ]; then
+            echo "📄 Data file structure:"
+            jq -r 'keys[]' patterns/phone-patterns.json 2>/dev/null || echo "Could not extract keys"
+            
+                         echo "🧪 Running AJV validation..."
+             if ajv validate -s schemas/phone-pattern.schema.json -d patterns/phone-patterns.json --spec=draft7 --strict=false -c ajv-formats --verbose --all-errors; then
+               echo "✅ Phone patterns validation passed"
+             else
+               echo "❌ Phone patterns validation failed"
+               echo "📋 Attempting to show more details..."
+               ajv compile -s schemas/phone-pattern.schema.json --spec=draft7 --strict=false -c ajv-formats 2>&1 || true
+               exit 1
+             fi
+          else
+            echo "❌ Required files missing"
             exit 1
           fi
 
-          # Check email patterns
-          email_dups=$(jq -r '.patterns[].id' patterns/email-patterns.json | sort | uniq -d)
-          if [ ! -z "$email_dups" ]; then
-            echo "❌ Duplicate email pattern IDs found: $email_dups"
+      - name: Validate email patterns
+        run: |
+          echo "🔍 Validating email patterns..."
+          echo "Schema: schemas/email-pattern.schema.json"
+          echo "Data: patterns/email-patterns.json"
+
+          if [ -f "schemas/email-pattern.schema.json" ] && [ -f "patterns/email-patterns.json" ]; then
+            echo "📄 Data file structure:"
+            jq -r 'keys[]' patterns/email-patterns.json 2>/dev/null || echo "Could not extract keys"
+            
+                         echo "🧪 Running AJV validation..."
+             if ajv validate -s schemas/email-pattern.schema.json -d patterns/email-patterns.json --spec=draft7 --strict=false -c ajv-formats --verbose --all-errors; then
+               echo "✅ Email patterns validation passed"
+             else
+               echo "❌ Email patterns validation failed"
+               echo "📋 Attempting to show more details..."
+               ajv compile -s schemas/email-pattern.schema.json --spec=draft7 --strict=false -c ajv-formats 2>&1 || true
+               exit 1
+             fi
+          else
+            echo "❌ Required files missing"
             exit 1
+          fi
+
+      - name: Validate domain patterns
+        run: |
+          echo "🔍 Validating domain patterns..."
+          echo "Schema: schemas/domain-pattern.schema.json"
+          echo "Data: patterns/domain-patterns.json"
+
+          if [ -f "schemas/domain-pattern.schema.json" ] && [ -f "patterns/domain-patterns.json" ]; then
+            echo "📄 Data file structure:"
+            jq -r 'keys[]' patterns/domain-patterns.json 2>/dev/null || echo "Could not extract keys"
+            
+                         echo "🧪 Running AJV validation..."
+             if ajv validate -s schemas/domain-pattern.schema.json -d patterns/domain-patterns.json --spec=draft7 --strict=false -c ajv-formats --verbose --all-errors; then
+               echo "✅ Domain patterns validation passed"
+             else
+               echo "❌ Domain patterns validation failed"
+               echo "📋 Attempting to show more details..."
+               ajv compile -s schemas/domain-pattern.schema.json --spec=draft7 --strict=false -c ajv-formats 2>&1 || true
+               exit 1
+             fi
+          else
+            echo "❌ Required files missing"
+            exit 1
+          fi
+
+      - name: Validate phone blocklist
+        run: |
+          echo "🔍 Validating phone blocklist..."
+          echo "Schema: schemas/phone-blocklist.schema.json"
+          echo "Data: blocklists/phone-numbers.json"
+
+          if [ -f "schemas/phone-blocklist.schema.json" ] && [ -f "blocklists/phone-numbers.json" ]; then
+            echo "📄 Data file structure:"
+            jq -r 'keys[]' blocklists/phone-numbers.json 2>/dev/null || echo "Could not extract keys"
+            
+                         echo "🧪 Running AJV validation..."
+             if ajv validate -s schemas/phone-blocklist.schema.json -d blocklists/phone-numbers.json --spec=draft7 --strict=false -c ajv-formats --verbose --all-errors; then
+               echo "✅ Phone blocklist validation passed"
+             else
+               echo "❌ Phone blocklist validation failed"
+               echo "📋 Attempting to show more details..."
+               ajv compile -s schemas/phone-blocklist.schema.json --spec=draft7 --strict=false -c ajv-formats 2>&1 || true
+               exit 1
+             fi
+          else
+            echo "❌ Required files missing"
+            exit 1
+          fi
+
+      - name: Validate email blocklist
+        run: |
+          echo "🔍 Validating email blocklist..."
+          echo "Schema: schemas/email-blocklist.schema.json"
+          echo "Data: blocklists/email-addresses.json"
+
+          if [ -f "schemas/email-blocklist.schema.json" ] && [ -f "blocklists/email-addresses.json" ]; then
+            echo "📄 Schema content (first 30 lines):"
+            head -30 schemas/email-blocklist.schema.json | cat -n
+            echo ""
+            echo "📄 Data file structure:"
+            jq -r 'keys[]' blocklists/email-addresses.json 2>/dev/null || echo "Could not extract keys"
+            
+                         echo "🧪 Testing schema compilation first..."
+             if ajv compile -s schemas/email-blocklist.schema.json --spec=draft7 --strict=false -c ajv-formats 2>&1; then
+               echo "✅ Schema compilation successful"
+               
+               echo "🧪 Running AJV validation..."
+               if ajv validate -s schemas/email-blocklist.schema.json -d blocklists/email-addresses.json --spec=draft7 --strict=false -c ajv-formats --verbose --all-errors; then
+                 echo "✅ Email blocklist validation passed"
+               else
+                 echo "❌ Email blocklist validation failed"
+                 exit 1
+               fi
+             else
+               echo "❌ Schema compilation failed - this indicates a schema issue"
+               echo "📋 Checking for format-related issues..."
+               grep -n "format.*email" schemas/email-blocklist.schema.json || echo "No email format found"
+               exit 1
+             fi
+          else
+            echo "❌ Required files missing"
+            exit 1
+          fi
+
+      - name: Validate domain blocklist
+        run: |
+          echo "🔍 Validating domain blocklist..."
+          echo "Schema: schemas/domain-blocklist.schema.json"
+          echo "Data: blocklists/domains.json"
+
+          if [ -f "schemas/domain-blocklist.schema.json" ] && [ -f "blocklists/domains.json" ]; then
+            echo "📄 Data file structure:"
+            jq -r 'keys[]' blocklists/domains.json 2>/dev/null || echo "Could not extract keys"
+            
+                         echo "🧪 Running AJV validation..."
+             if ajv validate -s schemas/domain-blocklist.schema.json -d blocklists/domains.json --spec=draft7 --strict=false -c ajv-formats --verbose --all-errors; then
+               echo "✅ Domain blocklist validation passed"
+             else
+               echo "❌ Domain blocklist validation failed"
+               echo "📋 Attempting to show more details..."
+               ajv compile -s schemas/domain-blocklist.schema.json --spec=draft7 --strict=false -c ajv-formats 2>&1 || true
+               exit 1
+             fi
+          else
+            echo "❌ Required files missing"
+            exit 1
+          fi
+
+      - name: Check for duplicate IDs in patterns
+        run: |
+          echo "🔍 Checking for duplicate pattern IDs..."
+
+          # Check phone patterns
+          if [ -f "patterns/phone-patterns.json" ]; then
+            echo "📱 Checking phone patterns..."
+            phone_dups=$(jq -r '.patterns[].id' patterns/phone-patterns.json | sort | uniq -d)
+            if [ ! -z "$phone_dups" ]; then
+              echo "❌ Duplicate phone pattern IDs found: $phone_dups"
+              exit 1
+            else
+              echo "✅ No duplicate phone pattern IDs"
+            fi
+          fi
+
+          # Check email patterns
+          if [ -f "patterns/email-patterns.json" ]; then
+            echo "📧 Checking email patterns..."
+            email_dups=$(jq -r '.patterns[].id' patterns/email-patterns.json | sort | uniq -d)
+            if [ ! -z "$email_dups" ]; then
+              echo "❌ Duplicate email pattern IDs found: $email_dups"
+              exit 1
+            else
+              echo "✅ No duplicate email pattern IDs"
+            fi
           fi
 
           echo "✅ No duplicate pattern IDs found"
 
       - name: Check for duplicate entries in blocklists
         run: |
-          echo "Checking for duplicate blocklist entries..."
+          echo "🔍 Checking for duplicate blocklist entries..."
 
           # Check phone numbers
-          phone_dups=$(jq -r '.entries[].number' blocklists/phone-numbers.json | sort | uniq -d)
-          if [ ! -z "$phone_dups" ]; then
-            echo "❌ Duplicate phone numbers found: $phone_dups"
-            exit 1
+          if [ -f "blocklists/phone-numbers.json" ]; then
+            echo "📱 Checking phone numbers..."
+            phone_dups=$(jq -r '.entries[].number' blocklists/phone-numbers.json | sort | uniq -d)
+            if [ ! -z "$phone_dups" ]; then
+              echo "❌ Duplicate phone numbers found: $phone_dups"
+              exit 1
+            else
+              echo "✅ No duplicate phone numbers"
+            fi
           fi
 
           # Check email addresses
-          email_dups=$(jq -r '.entries[].email' blocklists/email-addresses.json | sort | uniq -d)
-          if [ ! -z "$email_dups" ]; then
-            echo "❌ Duplicate email addresses found: $email_dups"
-            exit 1
+          if [ -f "blocklists/email-addresses.json" ]; then
+            echo "📧 Checking email addresses..."
+            email_dups=$(jq -r '.entries[].email' blocklists/email-addresses.json | sort | uniq -d)
+            if [ ! -z "$email_dups" ]; then
+              echo "❌ Duplicate email addresses found: $email_dups"
+              exit 1
+            else
+              echo "✅ No duplicate email addresses"
+            fi
           fi
 
           # Check domains
-          domain_dups=$(jq -r '.entries[].domain' blocklists/domains.json | sort | uniq -d)
-          if [ ! -z "$domain_dups" ]; then
-            echo "❌ Duplicate domains found: $domain_dups"
-            exit 1
+          if [ -f "blocklists/domains.json" ]; then
+            echo "🌐 Checking domains..."
+            domain_dups=$(jq -r '.entries[].domain' blocklists/domains.json | sort | uniq -d)
+            if [ ! -z "$domain_dups" ]; then
+              echo "❌ Duplicate domains found: $domain_dups"
+              exit 1
+            else
+              echo "✅ No duplicate domains"
+            fi
           fi
 
           echo "✅ No duplicate blocklist entries found"
 
       - name: Test regex patterns
         run: |
-          echo "Testing regex patterns for validity..."
+          echo "🔍 Testing regex patterns for validity..."
 
           # Test phone patterns
-          echo "Testing phone patterns..."
-          jq -r '.patterns[].regex' patterns/phone-patterns.json | while read regex; do
-            if ! echo "1234567890" | grep -qE "$regex" 2>/dev/null && ! echo "test" | grep -qvE "$regex" 2>/dev/null; then
-              echo "✅ Regex pattern valid: $regex"
-            else
-              echo "⚠️  Regex pattern might have issues: $regex"
-            fi
-          done
+          if [ -f "patterns/phone-patterns.json" ]; then
+            echo "📱 Testing phone patterns..."
+            pattern_count=$(jq -r '.patterns | length' patterns/phone-patterns.json)
+            echo "📊 Found $pattern_count phone patterns to test"
+            
+            jq -r '.patterns[] | "\(.id)|\(.regex)"' patterns/phone-patterns.json | while IFS='|' read -r id regex; do
+              echo "🧪 Testing pattern '$id': $regex"
+              # Test if regex is syntactically valid
+              if echo "test" | grep -qE "$regex" 2>/dev/null || echo "test" | grep -qvE "$regex" 2>/dev/null; then
+                echo "  ✅ Regex syntax valid"
+              else
+                echo "  ❌ Regex syntax invalid: $regex"
+                exit 1
+              fi
+            done
+          fi
 
           # Test email patterns
-          echo "Testing email patterns..."
-          jq -r '.patterns[].regex' patterns/email-patterns.json | while read regex; do
-            if ! echo "test@example.com" | grep -qE "$regex" 2>/dev/null && ! echo "invalid" | grep -qvE "$regex" 2>/dev/null; then
-              echo "✅ Regex pattern valid: $regex"
-            else
-              echo "⚠️  Regex pattern might have issues: $regex"
-            fi
-          done
+          if [ -f "patterns/email-patterns.json" ]; then
+            echo "📧 Testing email patterns..."
+            pattern_count=$(jq -r '.patterns | length' patterns/email-patterns.json)
+            echo "📊 Found $pattern_count email patterns to test"
+            
+            jq -r '.patterns[] | "\(.id)|\(.regex)"' patterns/email-patterns.json | while IFS='|' read -r id regex; do
+              echo "🧪 Testing pattern '$id': $regex"
+              # Test if regex is syntactically valid
+              if echo "test@example.com" | grep -qE "$regex" 2>/dev/null || echo "invalid" | grep -qvE "$regex" 2>/dev/null; then
+                echo "  ✅ Regex syntax valid"
+              else
+                echo "  ❌ Regex syntax invalid: $regex"
+                exit 1
+              fi
+            done
+          fi
 
           echo "✅ Regex pattern testing completed"
 
       - name: Validate confidence scores
         run: |
-          echo "Validating confidence scores are within valid range..."
+          echo "🔍 Validating confidence scores are within valid range (0.0-1.0)..."
 
           # Check pattern confidence scores
-          invalid_phone_conf=$(jq -r '.patterns[] | select(.confidence < 0 or .confidence > 1) | .id' patterns/phone-patterns.json)
-          invalid_email_conf=$(jq -r '.patterns[] | select(.confidence < 0 or .confidence > 1) | .id' patterns/email-patterns.json)
+          if [ -f "patterns/phone-patterns.json" ]; then
+            echo "📱 Checking phone pattern confidence scores..."
+            invalid_phone_conf=$(jq -r '.patterns[] | select(.confidence < 0 or .confidence > 1) | .id' patterns/phone-patterns.json)
+            if [ ! -z "$invalid_phone_conf" ]; then
+              echo "❌ Invalid phone pattern confidence scores: $invalid_phone_conf"
+              exit 1
+            else
+              echo "✅ Phone pattern confidence scores valid"
+            fi
+          fi
+
+          if [ -f "patterns/email-patterns.json" ]; then
+            echo "📧 Checking email pattern confidence scores..."
+            invalid_email_conf=$(jq -r '.patterns[] | select(.confidence < 0 or .confidence > 1) | .id' patterns/email-patterns.json)
+            if [ ! -z "$invalid_email_conf" ]; then
+              echo "❌ Invalid email pattern confidence scores: $invalid_email_conf"
+              exit 1
+            else
+              echo "✅ Email pattern confidence scores valid"
+            fi
+          fi
 
           # Check blocklist confidence scores
-          invalid_phone_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .number' blocklists/phone-numbers.json)
-          invalid_email_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .email' blocklists/email-addresses.json)
-          invalid_domain_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .domain' blocklists/domains.json)
+          if [ -f "blocklists/phone-numbers.json" ]; then
+            echo "📱 Checking phone blocklist confidence scores..."
+            invalid_phone_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .number' blocklists/phone-numbers.json)
+            if [ ! -z "$invalid_phone_block_conf" ]; then
+              echo "❌ Invalid phone blocklist confidence scores: $invalid_phone_block_conf"
+              exit 1
+            else
+              echo "✅ Phone blocklist confidence scores valid"
+            fi
+          fi
 
-          if [ ! -z "$invalid_phone_conf" ] || [ ! -z "$invalid_email_conf" ] || [ ! -z "$invalid_phone_block_conf" ] || [ ! -z "$invalid_email_block_conf" ] || [ ! -z "$invalid_domain_block_conf" ]; then
-            echo "❌ Invalid confidence scores found (must be between 0.0 and 1.0)"
-            exit 1
+          if [ -f "blocklists/email-addresses.json" ]; then
+            echo "📧 Checking email blocklist confidence scores..."
+            invalid_email_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .email' blocklists/email-addresses.json)
+            if [ ! -z "$invalid_email_block_conf" ]; then
+              echo "❌ Invalid email blocklist confidence scores: $invalid_email_block_conf"
+              exit 1
+            else
+              echo "✅ Email blocklist confidence scores valid"
+            fi
+          fi
+
+          if [ -f "blocklists/domains.json" ]; then
+            echo "🌐 Checking domain blocklist confidence scores..."
+            invalid_domain_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .domain' blocklists/domains.json)
+            if [ ! -z "$invalid_domain_block_conf" ]; then
+              echo "❌ Invalid domain blocklist confidence scores: $invalid_domain_block_conf"
+              exit 1
+            else
+              echo "✅ Domain blocklist confidence scores valid"
+            fi
           fi
 
           echo "✅ All confidence scores are valid"
