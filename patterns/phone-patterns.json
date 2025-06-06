@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-15",
+  "patterns": [
+    {
+      "id": "us-toll-free-800",
+      "regex": "^1?8(00|44|55|66|77|88)[0-9]{7}$",
+      "description": "US toll-free numbers (800, 844, 855, 866, 877, 888)",
+      "confidence": 1.0,
+      "region": "US",
+      "category": "toll-free"
+    },
+    {
+      "id": "us-premium-900",
+      "regex": "^1?900[0-9]{7}$",
+      "description": "US premium rate numbers (900)",
+      "confidence": 1.0,
+      "region": "US",
+      "category": "premium-rate"
+    },
+    {
+      "id": "us-premium-976",
+      "regex": "^1?976[0-9]{7}$",
+      "description": "US premium rate numbers (976)",
+      "confidence": 1.0,
+      "region": "US",
+      "category": "premium-rate"
+    },
+    {
+      "id": "test-numbers-000",
+      "regex": "^[0-9]{10,11}000$",
+      "description": "Phone numbers ending in 000 (often test/placeholder)",
+      "confidence": 1.0,
+      "region": "global",
+      "category": "test"
+    },
+    {
+      "id": "fake-consecutive-1s",
+      "regex": "^[0-9]{7,8}1{4,}$",
+      "description": "Phone numbers with 4+ consecutive 1s (often fake)",
+      "confidence": 1.0,
+      "region": "global",
+      "category": "fake"
+    },
+    {
+      "id": "fake-consecutive-2s",
+      "regex": "^[0-9]{7,8}2{4,}$",
+      "description": "Phone numbers with 4+ consecutive 2s (often fake)",
+      "confidence": 1.0,
+      "region": "global",
+      "category": "fake"
+    },
+    {
+      "id": "us-555-test",
+      "regex": "^1?555[0-9]{7}$",
+      "description": "US 555 numbers (often fake/test numbers)",
+      "confidence": 1.0,
+      "region": "US",
+      "category": "test"
+    },
+    {
+      "id": "consecutive-identical",
+      "regex": "^[0-9]*([0-9])\\1{6,}[0-9]*$",
+      "description": "Phone numbers with 7+ consecutive identical digits",
+      "confidence": 1.0,
+      "region": "global",
+      "category": "fake"
+    }
+  ]
+}

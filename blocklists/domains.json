@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-15",
+  "entries": [
+    {
+      "domain": "spammy-domain.com",
+      "confidence": 0.85,
+      "source": "example_data",
+      "description": "Example low reputation domain - replace with real data",
+      "date_added": "2025-01-15",
+      "reputation_score": 15,
+      "category": "low-reputation"
+    },
+    {
+      "domain": "fake-business.tk",
+      "confidence": 0.9,
+      "source": "example_data",
+      "description": "Example fake business domain - replace with real data",
+      "date_added": "2025-01-15",
+      "reputation_score": 10,
+      "category": "suspicious"
+    }
+  ]
+}

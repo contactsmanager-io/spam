@@ -1,0 +1,160 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-15",
+  "patterns": [
+    {
+      "id": "noreply-standard",
+      "regex": "^noreply@.*",
+      "description": "No-reply email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "noreply-hyphen",
+      "regex": "^no-reply@.*",
+      "description": "No-reply email addresses (hyphenated)",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "donotreply-standard",
+      "regex": "^donotreply@.*",
+      "description": "Do not reply email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "donotreply-hyphen",
+      "regex": "^do-not-reply@.*",
+      "description": "Do not reply email addresses (hyphenated)",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "support-generic",
+      "regex": "^support@.*",
+      "description": "Generic support email addresses",
+      "confidence": 1.0,
+      "category": "generic"
+    },
+    {
+      "id": "help-generic",
+      "regex": "^help@.*",
+      "description": "Generic help email addresses",
+      "confidence": 1.0,
+      "category": "generic"
+    },
+    {
+      "id": "info-generic",
+      "regex": "^info@.*",
+      "description": "Generic info email addresses",
+      "confidence": 1.0,
+      "category": "generic"
+    },
+    {
+      "id": "sales-generic",
+      "regex": "^sales@.*",
+      "description": "Generic sales email addresses",
+      "confidence": 1.0,
+      "category": "marketing"
+    },
+    {
+      "id": "marketing-generic",
+      "regex": "^marketing@.*",
+      "description": "Generic marketing email addresses",
+      "confidence": 1.0,
+      "category": "marketing"
+    },
+    {
+      "id": "notifications-generic",
+      "regex": "^notifications?@.*",
+      "description": "Generic notification email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "alerts-generic",
+      "regex": "^alerts?@.*",
+      "description": "Generic alert email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "admin-generic",
+      "regex": "^admin@.*",
+      "description": "Generic admin email addresses",
+      "confidence": 1.0,
+      "category": "administrative"
+    },
+    {
+      "id": "webmaster-generic",
+      "regex": "^webmaster@.*",
+      "description": "Generic webmaster email addresses",
+      "confidence": 1.0,
+      "category": "administrative"
+    },
+    {
+      "id": "postmaster-generic",
+      "regex": "^postmaster@.*",
+      "description": "Generic postmaster email addresses",
+      "confidence": 1.0,
+      "category": "administrative"
+    },
+    {
+      "id": "automated-standard",
+      "regex": "^automated?@.*",
+      "description": "Automated email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "auto-generic",
+      "regex": "^auto@.*",
+      "description": "Auto email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "system-generic",
+      "regex": "^system@.*",
+      "description": "System email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "robot-generic",
+      "regex": "^robot@.*",
+      "description": "Robot email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "bot-generic",
+      "regex": "^bot@.*",
+      "description": "Bot email addresses",
+      "confidence": 1.0,
+      "category": "automated"
+    },
+    {
+      "id": "test-generic",
+      "regex": "^test@.*",
+      "description": "Test email addresses",
+      "confidence": 1.0,
+      "category": "test"
+    },
+    {
+      "id": "demo-generic",
+      "regex": "^demo@.*",
+      "description": "Demo email addresses",
+      "confidence": 1.0,
+      "category": "test"
+    },
+    {
+      "id": "plus-addressing",
+      "regex": ".*\\+[a-zA-Z0-9_-]+@.*",
+      "description": "Email addresses with plus addressing (often automated)",
+      "confidence": 0.8,
+      "category": "automated"
+    }
+  ]
+}

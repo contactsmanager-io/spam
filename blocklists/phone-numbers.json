@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-15",
+  "entries": [
+    {
+      "number": "18005551234",
+      "confidence": 0.95,
+      "source": "example_data",
+      "description": "Example telemarketing number - replace with real data",
+      "region": "US",
+      "date_added": "2025-01-15",
+      "report_count": 1,
+      "category": "telemarketing"
+    },
+    {
+      "number": "18007621234",
+      "confidence": 0.9,
+      "source": "example_data",
+      "description": "Example spam number - replace with real data",
+      "region": "US",
+      "date_added": "2025-01-15",
+      "report_count": 1,
+      "category": "spam"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-15",
+  "entries": [
+    {
+      "email": "spam@example.com",
+      "confidence": 0.98,
+      "source": "example_data",
+      "description": "Example spam email - replace with real data",
+      "date_added": "2025-01-15",
+      "report_count": 1,
+      "category": "spam"
+    },
+    {
+      "email": "newsletter-spam@test-domain.com",
+      "confidence": 0.85,
+      "source": "example_data",
+      "description": "Example newsletter spam - replace with real data",
+      "date_added": "2025-01-15",
+      "report_count": 1,
+      "category": "newsletter-spam"
+    }
+  ]
+}

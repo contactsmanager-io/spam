@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/contactsmanager-io/spam/blob/main/schemas/domain-blocklist.schema.json",
+  "title": "Domain Blocklist Schema",
+  "description": "Schema for validating domain blocklist entries",
+  "type": "object",
+  "required": ["version", "last_updated", "entries"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "domain",
+          "confidence",
+          "source",
+          "description",
+          "date_added"
+        ],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-\\.]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,}$",
+            "maxLength": 253
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "user_reports",
+              "domain_reputation",
+              "security_feed",
+              "government",
+              "community",
+              "automated",
+              "example_data"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "date_added": {
+            "type": "string",
+            "format": "date"
+          },
+          "reputation_score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "low-reputation",
+              "suspicious",
+              "malware",
+              "phishing",
+              "spam",
+              "parked",
+              "expired",
+              "temporary"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

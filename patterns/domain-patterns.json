@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-15",
+  "patterns": [
+    {
+      "id": "ip-addresses",
+      "regex": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "IP address domains",
+      "confidence": 1.0,
+      "category": "suspicious"
+    },
+    {
+      "id": "free-tk-domains",
+      "regex": ".*\\.tk$",
+      "description": "Free .tk domains",
+      "confidence": 0.9,
+      "category": "free-domain"
+    },
+    {
+      "id": "free-ml-domains",
+      "regex": ".*\\.ml$",
+      "description": "Free .ml domains",
+      "confidence": 0.9,
+      "category": "free-domain"
+    },
+    {
+      "id": "free-ga-domains",
+      "regex": ".*\\.ga$",
+      "description": "Free .ga domains",
+      "confidence": 0.9,
+      "category": "free-domain"
+    },
+    {
+      "id": "free-cf-domains",
+      "regex": ".*\\.cf$",
+      "description": "Free .cf domains",
+      "confidence": 0.9,
+      "category": "free-domain"
+    }
+  ]
+}

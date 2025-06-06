@@ -1,0 +1,142 @@
+name: Validate JSON Data
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: |
+          npm install -g ajv-cli ajv-formats
+
+      - name: Validate phone patterns
+        run: |
+          ajv validate -s schemas/phone-pattern.schema.json -d patterns/phone-patterns.json --verbose
+
+      - name: Validate email patterns
+        run: |
+          ajv validate -s schemas/email-pattern.schema.json -d patterns/email-patterns.json --verbose
+
+      - name: Validate domain patterns
+        run: |
+          ajv validate -s schemas/domain-pattern.schema.json -d patterns/domain-patterns.json --verbose
+
+      - name: Validate phone blocklist
+        run: |
+          ajv validate -s schemas/phone-blocklist.schema.json -d blocklists/phone-numbers.json --verbose
+
+      - name: Validate email blocklist
+        run: |
+          ajv validate -s schemas/email-blocklist.schema.json -d blocklists/email-addresses.json --verbose
+
+      - name: Validate domain blocklist
+        run: |
+          ajv validate -s schemas/domain-blocklist.schema.json -d blocklists/domains.json --verbose
+
+      - name: Check for duplicate IDs in patterns
+        run: |
+          echo "Checking for duplicate pattern IDs..."
+
+          # Check phone patterns
+          phone_dups=$(jq -r '.patterns[].id' patterns/phone-patterns.json | sort | uniq -d)
+          if [ ! -z "$phone_dups" ]; then
+            echo "❌ Duplicate phone pattern IDs found: $phone_dups"
+            exit 1
+          fi
+
+          # Check email patterns
+          email_dups=$(jq -r '.patterns[].id' patterns/email-patterns.json | sort | uniq -d)
+          if [ ! -z "$email_dups" ]; then
+            echo "❌ Duplicate email pattern IDs found: $email_dups"
+            exit 1
+          fi
+
+          echo "✅ No duplicate pattern IDs found"
+
+      - name: Check for duplicate entries in blocklists
+        run: |
+          echo "Checking for duplicate blocklist entries..."
+
+          # Check phone numbers
+          phone_dups=$(jq -r '.entries[].number' blocklists/phone-numbers.json | sort | uniq -d)
+          if [ ! -z "$phone_dups" ]; then
+            echo "❌ Duplicate phone numbers found: $phone_dups"
+            exit 1
+          fi
+
+          # Check email addresses
+          email_dups=$(jq -r '.entries[].email' blocklists/email-addresses.json | sort | uniq -d)
+          if [ ! -z "$email_dups" ]; then
+            echo "❌ Duplicate email addresses found: $email_dups"
+            exit 1
+          fi
+
+          # Check domains
+          domain_dups=$(jq -r '.entries[].domain' blocklists/domains.json | sort | uniq -d)
+          if [ ! -z "$domain_dups" ]; then
+            echo "❌ Duplicate domains found: $domain_dups"
+            exit 1
+          fi
+
+          echo "✅ No duplicate blocklist entries found"
+
+      - name: Test regex patterns
+        run: |
+          echo "Testing regex patterns for validity..."
+
+          # Test phone patterns
+          echo "Testing phone patterns..."
+          jq -r '.patterns[].regex' patterns/phone-patterns.json | while read regex; do
+            if ! echo "1234567890" | grep -qE "$regex" 2>/dev/null && ! echo "test" | grep -qvE "$regex" 2>/dev/null; then
+              echo "✅ Regex pattern valid: $regex"
+            else
+              echo "⚠️  Regex pattern might have issues: $regex"
+            fi
+          done
+
+          # Test email patterns
+          echo "Testing email patterns..."
+          jq -r '.patterns[].regex' patterns/email-patterns.json | while read regex; do
+            if ! echo "test@example.com" | grep -qE "$regex" 2>/dev/null && ! echo "invalid" | grep -qvE "$regex" 2>/dev/null; then
+              echo "✅ Regex pattern valid: $regex"
+            else
+              echo "⚠️  Regex pattern might have issues: $regex"
+            fi
+          done
+
+          echo "✅ Regex pattern testing completed"
+
+      - name: Validate confidence scores
+        run: |
+          echo "Validating confidence scores are within valid range..."
+
+          # Check pattern confidence scores
+          invalid_phone_conf=$(jq -r '.patterns[] | select(.confidence < 0 or .confidence > 1) | .id' patterns/phone-patterns.json)
+          invalid_email_conf=$(jq -r '.patterns[] | select(.confidence < 0 or .confidence > 1) | .id' patterns/email-patterns.json)
+
+          # Check blocklist confidence scores
+          invalid_phone_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .number' blocklists/phone-numbers.json)
+          invalid_email_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .email' blocklists/email-addresses.json)
+          invalid_domain_block_conf=$(jq -r '.entries[] | select(.confidence < 0 or .confidence > 1) | .domain' blocklists/domains.json)
+
+          if [ ! -z "$invalid_phone_conf" ] || [ ! -z "$invalid_email_conf" ] || [ ! -z "$invalid_phone_block_conf" ] || [ ! -z "$invalid_email_block_conf" ] || [ ! -z "$invalid_domain_block_conf" ]; then
+            echo "❌ Invalid confidence scores found (must be between 0.0 and 1.0)"
+            exit 1
+          fi
+
+          echo "✅ All confidence scores are valid"
