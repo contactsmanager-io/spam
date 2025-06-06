@@ -4,7 +4,11 @@
   "title": "Domain Pattern Schema",
   "description": "Schema for validating domain pattern entries",
   "type": "object",
-  "required": ["version", "last_updated", "patterns"],
+  "required": [
+    "version",
+    "last_updated",
+    "patterns"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -12,13 +16,19 @@
     },
     "last_updated": {
       "type": "string",
-      "format": "date"
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     },
     "patterns": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "regex", "description", "confidence", "category"],
+        "required": [
+          "id",
+          "regex",
+          "description",
+          "confidence",
+          "category"
+        ],
         "properties": {
           "id": {
             "type": "string",

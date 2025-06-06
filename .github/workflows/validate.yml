@@ -26,27 +26,27 @@ jobs:
 
       - name: Validate phone patterns
         run: |
-          ajv validate -s schemas/phone-pattern.schema.json -d patterns/phone-patterns.json --verbose
+          ajv validate -s schemas/phone-pattern.schema.json -d patterns/phone-patterns.json --spec=draft7 --verbose --all-errors
 
       - name: Validate email patterns
         run: |
-          ajv validate -s schemas/email-pattern.schema.json -d patterns/email-patterns.json --verbose
+          ajv validate -s schemas/email-pattern.schema.json -d patterns/email-patterns.json --spec=draft7 --verbose --all-errors
 
       - name: Validate domain patterns
         run: |
-          ajv validate -s schemas/domain-pattern.schema.json -d patterns/domain-patterns.json --verbose
+          ajv validate -s schemas/domain-pattern.schema.json -d patterns/domain-patterns.json --spec=draft7 --verbose --all-errors
 
       - name: Validate phone blocklist
         run: |
-          ajv validate -s schemas/phone-blocklist.schema.json -d blocklists/phone-numbers.json --verbose
+          ajv validate -s schemas/phone-blocklist.schema.json -d blocklists/phone-numbers.json --spec=draft7 --verbose --all-errors
 
       - name: Validate email blocklist
         run: |
-          ajv validate -s schemas/email-blocklist.schema.json -d blocklists/email-addresses.json --verbose
+          ajv validate -s schemas/email-blocklist.schema.json -d blocklists/email-addresses.json --spec=draft7 --verbose --all-errors
 
       - name: Validate domain blocklist
         run: |
-          ajv validate -s schemas/domain-blocklist.schema.json -d blocklists/domains.json --verbose
+          ajv validate -s schemas/domain-blocklist.schema.json -d blocklists/domains.json --spec=draft7 --verbose --all-errors
 
       - name: Check for duplicate IDs in patterns
         run: |
