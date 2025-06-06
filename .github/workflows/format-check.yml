@@ -23,9 +23,37 @@ jobs:
         run: |
           npm install -g prettier jq
 
+      - name: Debug - List files
+        run: |
+          echo "📁 Listing workspace contents..."
+          ls -la
+          echo ""
+          echo "📁 Listing patterns directory..."
+          if [ -d "patterns" ]; then
+            ls -la patterns/
+          else
+            echo "❌ patterns directory not found"
+          fi
+          echo ""
+          echo "📁 Listing blocklists directory..."
+          if [ -d "blocklists" ]; then
+            ls -la blocklists/
+          else
+            echo "❌ blocklists directory not found"
+          fi
+          echo ""
+          echo "📁 Listing schemas directory..."
+          if [ -d "schemas" ]; then
+            ls -la schemas/
+          else
+            echo "❌ schemas directory not found"
+          fi
+
       - name: Check JSON formatting
         run: |
-          echo "Checking JSON formatting..."
+          echo "🔍 Checking JSON formatting..."
+          echo "Using jq version: $(jq --version)"
+          echo ""
 
           # Check if all JSON files are properly formatted
           files_to_check=(
@@ -45,32 +73,91 @@ jobs:
           formatting_issues=false
 
           for file in "${files_to_check[@]}"; do
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📄 Processing file: $file"
+            
             if [ -f "$file" ]; then
-              echo "Checking formatting of $file..."
+              echo "✅ File exists"
               
-              # Check if file is valid JSON
-              if ! jq empty "$file" 2>/dev/null; then
+              # Show file size and basic info
+              file_size=$(wc -c < "$file")
+              line_count=$(wc -l < "$file")
+              echo "📊 File size: $file_size bytes, Lines: $line_count"
+              
+              # Show first few characters to detect encoding issues
+              echo "🔤 First 100 characters:"
+              head -c 100 "$file" | cat -v
+              echo ""
+              
+              # Show last few characters to detect truncation
+              echo "🔤 Last 100 characters:"
+              tail -c 100 "$file" | cat -v
+              echo ""
+              
+              # Check if file is valid JSON with detailed error output
+              echo "🔍 Validating JSON syntax..."
+              json_error=$(jq empty "$file" 2>&1)
+              if [ $? -ne 0 ]; then
                 echo "❌ $file contains invalid JSON"
+                echo "📝 Detailed error output:"
+                echo "$json_error"
+                echo ""
+                echo "📄 File content (first 20 lines):"
+                head -20 "$file" | cat -n
+                echo ""
+                echo "📄 File content (last 20 lines):"
+                tail -20 "$file" | cat -n
+                echo ""
+                formatting_issues=true
+                continue
+              else
+                echo "✅ JSON syntax is valid"
+              fi
+              
+              # Check if file is properly formatted (2-space indentation)
+              echo "🎨 Checking JSON formatting..."
+              formatted_content=$(jq --indent 2 . "$file" 2>&1)
+              if [ $? -ne 0 ]; then
+                echo "❌ Failed to format $file"
+                echo "📝 jq format error:"
+                echo "$formatted_content"
                 formatting_issues=true
                 continue
               fi
               
-              # Check if file is properly formatted (2-space indentation)
-              formatted_content=$(jq --indent 2 . "$file")
               original_content=$(cat "$file")
               
               if [ "$formatted_content" != "$original_content" ]; then
                 echo "❌ $file is not properly formatted"
-                echo "Expected format:"
-                echo "$formatted_content" | head -10
+                echo ""
+                echo "📊 Content length comparison:"
+                echo "  Original: $(echo "$original_content" | wc -c) characters"
+                echo "  Formatted: $(echo "$formatted_content" | wc -c) characters"
+                echo ""
+                echo "🔍 First difference (showing first 20 lines of expected format):"
+                echo "$formatted_content" | head -20 | cat -n
                 echo "..."
+                echo ""
+                echo "🔍 Current format (first 20 lines):"
+                echo "$original_content" | head -20 | cat -n
+                echo ""
                 formatting_issues=true
               else
                 echo "✅ $file is properly formatted"
               fi
             else
               echo "⚠️  $file not found, skipping..."
+              echo "🔍 Checking if directory exists..."
+              dir_path=$(dirname "$file")
+              if [ -d "$dir_path" ]; then
+                echo "✅ Directory $dir_path exists"
+                echo "📁 Contents of $dir_path:"
+                ls -la "$dir_path"
+              else
+                echo "❌ Directory $dir_path does not exist"
+              fi
             fi
+            echo ""
           done
 
           if [ "$formatting_issues" = true ]; then
@@ -83,40 +170,83 @@ jobs:
 
       - name: Check for required fields
         run: |
-          echo "Checking for required fields..."
+          echo "🔍 Checking for required fields..."
 
           # Check that all files have version and last_updated
           required_check=true
 
           for file in patterns/*.json blocklists/*.json; do
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📄 Checking required fields in $file..."
+            
             if [ -f "$file" ]; then
-              echo "Checking required fields in $file..."
+              echo "✅ File exists"
               
-              version=$(jq -r '.version // empty' "$file")
-              last_updated=$(jq -r '.last_updated // empty' "$file")
+              # Extract fields with detailed error handling
+              echo "🔍 Extracting version field..."
+              version=$(jq -r '.version // empty' "$file" 2>&1)
+              if [ $? -ne 0 ]; then
+                echo "❌ Error extracting version from $file:"
+                echo "$version"
+                required_check=false
+                continue
+              fi
+              
+              echo "🔍 Extracting last_updated field..."
+              last_updated=$(jq -r '.last_updated // empty' "$file" 2>&1)
+              if [ $? -ne 0 ]; then
+                echo "❌ Error extracting last_updated from $file:"
+                echo "$last_updated"
+                required_check=false
+                continue
+              fi
+              
+              echo "📊 Extracted values:"
+              echo "  Version: '$version'"
+              echo "  Last Updated: '$last_updated'"
               
               if [ -z "$version" ]; then
                 echo "❌ $file missing 'version' field"
+                echo "🔍 Available top-level fields:"
+                jq -r 'keys[]' "$file" 2>/dev/null || echo "Could not extract keys"
                 required_check=false
               fi
               
               if [ -z "$last_updated" ]; then
                 echo "❌ $file missing 'last_updated' field"
+                echo "🔍 Available top-level fields:"
+                jq -r 'keys[]' "$file" 2>/dev/null || echo "Could not extract keys"
                 required_check=false
               fi
               
               # Check version format (semantic versioning)
-              if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "❌ $file has invalid version format: $version (expected: X.Y.Z)"
-                required_check=false
+              if [ -n "$version" ]; then
+                echo "🔍 Validating version format: $version"
+                if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "❌ $file has invalid version format: $version (expected: X.Y.Z)"
+                  echo "📝 Version should match semantic versioning pattern (e.g., 1.0.0)"
+                  required_check=false
+                else
+                  echo "✅ Version format is valid"
+                fi
               fi
               
               # Check date format
-              if [[ ! $last_updated =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-                echo "❌ $file has invalid date format: $last_updated (expected: YYYY-MM-DD)"
-                required_check=false
+              if [ -n "$last_updated" ]; then
+                echo "🔍 Validating date format: $last_updated"
+                if [[ ! $last_updated =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+                  echo "❌ $file has invalid date format: $last_updated (expected: YYYY-MM-DD)"
+                  echo "📝 Date should be in ISO format (e.g., 2025-01-15)"
+                  required_check=false
+                else
+                  echo "✅ Date format is valid"
+                fi
               fi
+            else
+              echo "❌ File not found: $file"
+              required_check=false
             fi
+            echo ""
           done
 
           if [ "$required_check" = false ]; then
