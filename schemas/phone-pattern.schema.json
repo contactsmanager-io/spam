@@ -4,7 +4,11 @@
   "title": "Phone Pattern Schema",
   "description": "Schema for validating phone number pattern entries",
   "type": "object",
-  "required": ["version", "last_updated", "patterns"],
+  "required": [
+    "version",
+    "last_updated",
+    "patterns"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -18,7 +22,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "regex", "description", "confidence", "category"],
+        "required": [
+          "id",
+          "regex",
+          "description",
+          "confidence",
+          "category"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -43,7 +53,17 @@
           },
           "region": {
             "type": "string",
-            "enum": ["US", "CA", "UK", "EU", "global", "AU", "IN", "JP", "CN"]
+            "enum": [
+              "US",
+              "CA",
+              "UK",
+              "EU",
+              "global",
+              "AU",
+              "IN",
+              "JP",
+              "CN"
+            ]
           },
           "category": {
             "type": "string",

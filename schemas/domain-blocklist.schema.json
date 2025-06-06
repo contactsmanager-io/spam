@@ -4,7 +4,11 @@
   "title": "Domain Blocklist Schema",
   "description": "Schema for validating domain blocklist entries",
   "type": "object",
-  "required": ["version", "last_updated", "entries"],
+  "required": [
+    "version",
+    "last_updated",
+    "entries"
+  ],
   "properties": {
     "version": {
       "type": "string",

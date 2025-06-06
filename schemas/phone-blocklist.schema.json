@@ -4,7 +4,11 @@
   "title": "Phone Blocklist Schema",
   "description": "Schema for validating phone number blocklist entries",
   "type": "object",
-  "required": ["version", "last_updated", "entries"],
+  "required": [
+    "version",
+    "last_updated",
+    "entries"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -54,7 +58,17 @@
           },
           "region": {
             "type": "string",
-            "enum": ["US", "CA", "UK", "EU", "global", "AU", "IN", "JP", "CN"]
+            "enum": [
+              "US",
+              "CA",
+              "UK",
+              "EU",
+              "global",
+              "AU",
+              "IN",
+              "JP",
+              "CN"
+            ]
           },
           "date_added": {
             "type": "string",

@@ -4,7 +4,11 @@
   "title": "Email Pattern Schema",
   "description": "Schema for validating email pattern entries",
   "type": "object",
-  "required": ["version", "last_updated", "patterns"],
+  "required": [
+    "version",
+    "last_updated",
+    "patterns"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -18,7 +22,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "regex", "description", "confidence", "category"],
+        "required": [
+          "id",
+          "regex",
+          "description",
+          "confidence",
+          "category"
+        ],
         "properties": {
           "id": {
             "type": "string",
