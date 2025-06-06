@@ -1,6 +1,7 @@
 # ContactsManager.io Spam Database
 
 A community-driven repository of spam phone numbers, email addresses, and patterns to improve contact recommendations across the ContactsManager.io ecosystem.
+Fix formatting
 
 ## 🎯 Purpose
 
