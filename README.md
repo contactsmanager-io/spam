@@ -232,4 +232,4 @@ function isSpamPhone(phoneNumber) {
 
 ---
 
-**Made with ❤️**
+**Made with ❤️ in California**
